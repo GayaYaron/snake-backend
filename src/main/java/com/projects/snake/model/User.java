@@ -1,12 +1,14 @@
 package com.projects.snake.model;
 
-import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 
 import com.sun.istack.NotNull;
 
@@ -23,7 +25,12 @@ public class User {
 	@NotNull
 	private String password;
 	private int coins;
-	@OneToMany(mappedBy = "user")
-	private List<Design> designs;
+	private Integer chosenDesign;
+	@ManyToMany
+	@JoinTable(
+			  name = "user_design", 
+			  joinColumns = @JoinColumn(name = "user_id"), 
+			  inverseJoinColumns = @JoinColumn(name = "design_id"))
+	private Set<Design> designs;
 	
 }
