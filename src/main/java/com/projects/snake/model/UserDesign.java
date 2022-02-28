@@ -1,26 +1,30 @@
 package com.projects.snake.model;
 
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-
-import com.sun.istack.NotNull;
+import javax.persistence.ManyToOne;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-public class User {
+@NoArgsConstructor
+public class UserDesign {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
-	@NotNull
-	private String nickname;
-	@NotNull
-	private String password;
-	private int coins;
-	private Integer chosenDesign;
+	@ManyToOne
+	private User user;
+	@ManyToOne
+	private Design design;
+	
+	public UserDesign(User user, Design design) {
+		super();
+		this.user = user;
+		this.design = design;
+	}
 	
 }
