@@ -8,9 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.projects.snake.exception.NotFoundException;
 import com.projects.snake.exception.util.NullUtil;
+import com.projects.snake.model.ColorPack;
 import com.projects.snake.model.Design;
 import com.projects.snake.model.User;
-import com.projects.snake.model.UserDesign;
+import com.projects.snake.repository.ColorPackRepo;
 import com.projects.snake.repository.DesignBaseRepo;
 import com.projects.snake.repository.DesignRepo;
 import com.projects.snake.repository.UserDesignRepo;
@@ -31,51 +32,69 @@ public class UserService {
 	@Autowired
 	private UserDesignRepo userDesignRepo;
 	@Autowired
+	private ColorPackRepo colorRepo;
+	@Autowired
 	private LoginResponseMaker responseMaker;
 	@Autowired
 	private NullUtil nullUtil;
 	@Autowired
 	private UserDetail detail;
-	
+
 	public Optional<LoginResponse> login(String nickname, String password) {
 		nullUtil.check(nickname, "nickname");
 		nullUtil.check(password, "password");
 		Optional<User> optionalUser = userRepo.findByNicknameAndPassword(nickname, password);
-		if(optionalUser.isEmpty()) {
+		if (optionalUser.isEmpty()) {
 			return Optional.empty();
 		}
 		User user = optionalUser.get();
-		return Optional.of(responseMaker.make(user.getId(), user.getNickname()));
+		return Optional.of(responseMaker.make(user.getId(), user.getNickname(), getDesign(user.getChosenDesign())));
 	}
-	
+
 	/**
-	 * sets the chosen design of the user
-	 * if the chosen design is not already in the user designs- adds it
+	 * sets the chosen design of the user if the user has such design
+	 * 
 	 * @param designId
-	 * @throws NotFoundException- if such design does not exist in the database
+	 * @throws NotFoundException- if such design does not exist in the user's list
 	 */
 	@Transactional(readOnly = false)
 	public void setChosenDesign(Integer designId) {
-		if(!(designId==null)) {
-			Optional<Design> optionDesign = designRepo.findById(designId);
-			if(optionDesign.isEmpty()) {
+		if (!(designId == null)) {
+			if (!(userDesignRepo.existsByUserIdAndDesignId(detail.getId(), designId))) {
 				throw new NotFoundException("design");
 			}
 			User user = getUser().get();
 			user.setChosenDesign(designId);
-			if(!(userDesignRepo.existsByUserIdAndDesignId(detail.getId(), designId))) {
-				Design design = optionDesign.get();
-				userDesignRepo.save(new UserDesign(user, design));
-			}
 			userRepo.save(user);
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @return Optional<User> the details of the user if such exist
 	 */
 	public Optional<User> getUser() {
 		return userRepo.findById(detail.getId());
+	}
+
+	private Design getDesign(Integer designId) {
+		if (designId != null) {
+			Optional<Design> optionalDesign = designRepo.findById(designId);
+			if (optionalDesign.isPresent()) {
+				return optionalDesign.get();
+			}
+		}
+		// change to return the default design
+		return null;
+	}
+	
+	public void buyColorPack(Integer colorId) {
+		if(colorId!=null) {
+			Optional<ColorPack> optional = colorRepo.findById(colorId);
+			if(optional.isEmpty()) {
+				throw new NotFoundException("color pack");
+			}
+			
+		}
 	}
 }

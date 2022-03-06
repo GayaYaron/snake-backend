@@ -1,6 +1,7 @@
 package com.projects.snake.model;
 
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -17,8 +18,10 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
 	@NotNull
+	@Column(nullable = false)
 	private String nickname;
 	@NotNull
+	@Column(nullable = false)
 	private String password;
 	private int coins;
 	private Integer chosenDesign;

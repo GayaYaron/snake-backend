@@ -15,5 +15,6 @@ public class ColorPack {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
+	private int price;
 	private List<String> colors;
 }
