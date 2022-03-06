@@ -6,14 +6,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.projects.snake.exception.AlreadyPurchasedException;
+import com.projects.snake.exception.NotEnoughCoinsException;
 import com.projects.snake.exception.NotFoundException;
 import com.projects.snake.exception.util.NullUtil;
 import com.projects.snake.model.ColorPack;
 import com.projects.snake.model.Design;
 import com.projects.snake.model.User;
+import com.projects.snake.model.UserColor;
 import com.projects.snake.repository.ColorPackRepo;
 import com.projects.snake.repository.DesignBaseRepo;
 import com.projects.snake.repository.DesignRepo;
+import com.projects.snake.repository.UserColorRepo;
 import com.projects.snake.repository.UserDesignRepo;
 import com.projects.snake.repository.UserRepo;
 import com.projects.snake.service.detail.UserDetail;
@@ -34,6 +38,8 @@ public class UserService {
 	@Autowired
 	private ColorPackRepo colorRepo;
 	@Autowired
+	private UserColorRepo userColorRepo;
+	@Autowired
 	private LoginResponseMaker responseMaker;
 	@Autowired
 	private NullUtil nullUtil;
@@ -48,7 +54,8 @@ public class UserService {
 			return Optional.empty();
 		}
 		User user = optionalUser.get();
-		return Optional.of(responseMaker.make(user.getId(), user.getNickname(), getDesign(user.getChosenDesign())));
+		return Optional.of(responseMaker.make(user.getId(), user.getNickname(), user.getCoins(),
+				getDesign(user.getChosenDesign())));
 	}
 
 	/**
@@ -87,14 +94,33 @@ public class UserService {
 		// change to return the default design
 		return null;
 	}
-	
+
+	/**
+	 * buys the color pack
+	 * 
+	 * @param colorId
+	 * @throws AlreadyPurchasedException - if the user already has this color pack
+	 * @throws NotFoundException         - if such color pack was not found
+	 * @throws NotEnoughCoinsException   - if the user does not have enough coins to
+	 *                                   buy the color pack
+	 */
 	public void buyColorPack(Integer colorId) {
-		if(colorId!=null) {
+		if (colorId != null) {
+			if (userColorRepo.existsByUserIdAndColorPackId(detail.getId(), colorId)) {
+				throw new AlreadyPurchasedException("color pack");
+			}
 			Optional<ColorPack> optional = colorRepo.findById(colorId);
-			if(optional.isEmpty()) {
+			if (optional.isEmpty()) {
 				throw new NotFoundException("color pack");
 			}
-			
+			ColorPack colorPack = optional.get();
+			User user = userRepo.getById(detail.getId());
+			if (colorPack.getPrice() > user.getCoins()) {
+				throw new NotEnoughCoinsException("color pack");
+			}
+			userColorRepo.save(new UserColor(user, colorPack));
+			user.setCoins(user.getCoins() - colorPack.getPrice());
+			userRepo.save(user);
 		}
 	}
 }

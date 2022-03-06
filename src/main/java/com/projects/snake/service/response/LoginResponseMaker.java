@@ -16,7 +16,7 @@ public class LoginResponseMaker {
 	@Autowired
 	private NullUtil nullUtil;
 
-	public LoginResponse make(Integer id, String nickname, Design design) {
+	public LoginResponse make(Integer id, String nickname, int coins, Design design) {
 		nullUtil.check(id, "id");
 		if (nickname == null) {
 			nickname = "";
@@ -28,6 +28,6 @@ public class LoginResponseMaker {
 						"sopegksldkjtdofjyslkethjdrihkgsrtgjnhsoerkyudrhklgsktsjgdfkguwnbosertioseritwiorlachmanntheking"
 								.getBytes()))
 				.compact();
-		return new LoginResponse(id, nickname, jwts, expitarion, design);
+		return new LoginResponse(id, nickname, jwts, expitarion, coins, design);
 	}
 }

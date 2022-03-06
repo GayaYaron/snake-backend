@@ -14,5 +14,6 @@ public class LoginResponse {
 	private String nickname;
 	private String jwtToken;
 	private Date expiration;
+	private int coins;
 	private Design chosenDesign;
 }
