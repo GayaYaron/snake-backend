@@ -16,15 +16,11 @@ import com.projects.snake.exception.util.NullUtil;
 import com.projects.snake.model.ColorPack;
 import com.projects.snake.model.ColorType;
 import com.projects.snake.model.Design;
-import com.projects.snake.model.DesignBase;
 import com.projects.snake.model.User;
 import com.projects.snake.model.UserColor;
-import com.projects.snake.model.UserDesign;
 import com.projects.snake.repository.ColorPackRepo;
-import com.projects.snake.repository.DesignBaseRepo;
 import com.projects.snake.repository.DesignRepo;
 import com.projects.snake.repository.UserColorRepo;
-import com.projects.snake.repository.UserDesignRepo;
 import com.projects.snake.repository.UserRepo;
 import com.projects.snake.service.detail.UserDetail;
 import com.projects.snake.service.response.LoginResponse;
@@ -34,13 +30,9 @@ import com.projects.snake.service.response.LoginResponseMaker;
 @Transactional
 public class UserService {
 	@Autowired
-	private DesignBaseRepo designBaseRepo;
-	@Autowired
 	private DesignRepo designRepo;
 	@Autowired
 	private UserRepo userRepo;
-	@Autowired
-	private UserDesignRepo userDesignRepo;
 	@Autowired
 	private ColorPackRepo colorRepo;
 	@Autowired
@@ -72,7 +64,7 @@ public class UserService {
 	@Transactional(readOnly = false)
 	public void setChosenDesign(Integer designId) {
 		if (!(designId == null)) {
-			if (!(userDesignRepo.existsByUserIdAndDesignId(detail.getId(), designId))) {
+			if (!(designRepo.existsByIdUserId(designId, detail.getId()))) {
 				throw new NotFoundException("design");
 			}
 			User user = getUser().get();
@@ -117,7 +109,7 @@ public class UserService {
 				throw new NotFoundException("color pack");
 			}
 			ColorPack colorPack = optional.get();
-			User user = userRepo.getById(detail.getId());
+			User user = getUser().get();
 			if (colorPack.getPrice() > user.getCoins()) {
 				throw new NotEnoughCoinsException("color pack");
 			}
@@ -128,8 +120,7 @@ public class UserService {
 	}
 
 	/**
-	 * saves the design base if no such base exists or fetches the existing base
-	 * saves the design saves the design in the user list sets the design to be the
+	 * saves the design, saves the design in the user list sets the design to be the
 	 * user's chosen design
 	 * 
 	 * @param design
@@ -139,18 +130,16 @@ public class UserService {
 	@Transactional(readOnly = false)
 	public void addDesign(Design design) {
 		if (design != null) {
-			DesignBase base = design.getBase();
-			String snakeCol = base.getSnakeColor();
-			String borderCol = base.getBorderColor();
-			String foodCol = base.getFoodColor();
+			String snakeCol = design.getSnakeColor();
+			String borderCol = design.getBorderColor();
+			String foodCol = design.getFoodColor();
 			checkColorsInDesign(snakeCol, borderCol, foodCol);
-			Optional<DesignBase> optionalBase = designBaseRepo.findBySnakeColorAndBorderColorAndFoodColor(snakeCol,
-					borderCol, foodCol);
-			base = optionalBase.isEmpty() ? designBaseRepo.save(base) : optionalBase.get();
-			design.setBase(base);
+			User user = userRepo.findById(detail.getId()).get();
+			design.setUser(user);
+			design.setId(null);
 			Design savedDesign = designRepo.save(design);
-			userDesignRepo.save(new UserDesign(getUser().get(), savedDesign));
-			setChosenDesign(savedDesign.getId());
+			user.setChosenDesign(savedDesign.getId());
+			userRepo.save(user);
 		}
 	}
 
@@ -193,21 +182,42 @@ public class UserService {
 		}
 		return found;
 	}
-	
+
 	/**
 	 * 
 	 * @return the chosen design if such exists, otherwise, user's default design
-	 * @throws NoDefaultDesignException - if no chosen design nor default design was found
+	 * @throws NoDefaultDesignException - if no chosen design nor default design was
+	 *                                  found
 	 */
 	public Design getChosenDesign() {
-		Optional<Design> optional = getDesign(getUser().get().getChosenDesign());
-		if(optional.isPresent()) {
-			return optional.get();
+		 Integer chosenDesign = getUser().get().getChosenDesign();
+		 Optional<Design> optionalChosen = designRepo.findById(chosenDesign);
+		 if(optionalChosen.isPresent()) {
+			 return optionalChosen.get();
+		 }
+		 Optional<Design> optionalDefault = designRepo.findFirstByNameAndUserId("default", detail.getId());
+		 if(optionalDefault.isEmpty()) {
+			 throw new NoDefaultDesignException();
+		 }
+		 return optionalDefault.get();
+	}
+
+	/**
+	 * deletes the design as long as it is not called default or that the user has another default design
+	 * @param designId
+	 * @throws NoDefaultDesignException - if it is the only default design the user has
+	 */
+	public void deleteDesign(Integer designId) {
+		if (designId != null) {
+			Optional<Design> optionalDesign = designRepo.findByIdAndUserId(designId, detail.getId());
+			if (optionalDesign.isPresent()) {
+				Design design = optionalDesign.get();
+				if (design.getName() == "default"
+						&& designRepo.findByNameAndUserId("default", detail.getId()).size() <= 1) {
+					throw new NoDefaultDesignException();
+				}
+				designRepo.delete(design);
+			}
 		}
-		Optional<UserDesign> optionalDefault = userDesignRepo.findFirstByUserIdAndDesignName(detail.getId(), "default");
-		if(optionalDefault.isEmpty()) {
-			throw new NoDefaultDesignException();
-		}
-		return optionalDefault.get().getDesign();
 	}
 }

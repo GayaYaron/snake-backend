@@ -16,6 +16,9 @@ public class Design {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
 	private String name;
+	private String snakeColor;
+	private String borderColor;
+	private String foodColor;
 	@ManyToOne
-	private DesignBase base;
+	private User user;
 }
