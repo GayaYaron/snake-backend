@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.projects.snake.exception.AlreadyPurchasedException;
+import com.projects.snake.exception.NoColorException;
 import com.projects.snake.exception.NotEnoughCoinsException;
 import com.projects.snake.exception.NotFoundException;
 import com.projects.snake.exception.util.NullUtil;
@@ -128,9 +129,11 @@ public class UserService {
 		}
 	}
 	
+	@Transactional(readOnly = false)
 	public void addDesign(Design design) {
 		if(design!=null) {
-			
+			checkColorsInDesign(design);
+			userDesignRepo.save(new UserDesign(getUser().get(), design));
 		}
 	}
 	
@@ -156,7 +159,15 @@ public class UserService {
 				break;
 			}
 		}
-		
+		if(!snake) {
+			throw new NoColorException("snake");
+		}
+		if(!border) {
+			throw new NoColorException("border");
+		}
+		if(!food) {
+			throw new NoColorException("food");
+		}
 	}
 	
 	private boolean hasColor(boolean found, ColorPack colorPack, String searchColor) {
