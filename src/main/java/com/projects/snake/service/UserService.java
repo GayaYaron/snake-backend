@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.projects.snake.exception.AlreadyPurchasedException;
 import com.projects.snake.exception.NoColorException;
+import com.projects.snake.exception.NoDefaultDesignException;
 import com.projects.snake.exception.NotEnoughCoinsException;
 import com.projects.snake.exception.NotFoundException;
 import com.projects.snake.exception.util.NullUtil;
@@ -59,8 +60,7 @@ public class UserService {
 			return Optional.empty();
 		}
 		User user = optionalUser.get();
-		return Optional.of(responseMaker.make(user.getId(), user.getNickname(), user.getCoins(),
-				getDesign(user.getChosenDesign())));
+		return Optional.of(responseMaker.make(user.getId(), user.getNickname(), user.getCoins()));
 	}
 
 	/**
@@ -89,22 +89,20 @@ public class UserService {
 		return userRepo.findById(detail.getId());
 	}
 
-	private Design getDesign(Integer designId) {
-		if (designId != null) {
-			Optional<Design> optionalDesign = designRepo.findById(designId);
-			if (optionalDesign.isPresent()) {
-				return optionalDesign.get();
-			}
-		}
-		// change to return the default design
-		return null;
+	/**
+	 * 
+	 * @param designId
+	 * @return an optional of the design if such exists
+	 */
+	public Optional<Design> getDesign(Integer designId) {
+		return (designId != null) ? designRepo.findById(designId) : Optional.empty();
 	}
 
 	/**
 	 * buys the colour pack
 	 * 
 	 * @param colorId
-	 * @throws AlreadyPurchasedException - if the user already has this color pack
+	 * @throws AlreadyPurchasedException - if the user already has this colour pack
 	 * @throws NotFoundException         - if such colour pack was not found
 	 * @throws NotEnoughCoinsException   - if the user does not have enough coins to
 	 *                                   buy the colour pack
@@ -194,5 +192,22 @@ public class UserService {
 			found = (found || colors.contains(searchColor));
 		}
 		return found;
+	}
+	
+	/**
+	 * 
+	 * @return the chosen design if such exists, otherwise, user's default design
+	 * @throws NoDefaultDesignException - if no chosen design nor default design was found
+	 */
+	public Design getChosenDesign() {
+		Optional<Design> optional = getDesign(getUser().get().getChosenDesign());
+		if(optional.isPresent()) {
+			return optional.get();
+		}
+		Optional<UserDesign> optionalDefault = userDesignRepo.findFirstByUserIdAndDesignName(detail.getId(), "default");
+		if(optionalDefault.isEmpty()) {
+			throw new NoDefaultDesignException();
+		}
+		return optionalDefault.get().getDesign();
 	}
 }

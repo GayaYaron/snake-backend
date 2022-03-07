@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.projects.snake.exception.util.NullUtil;
-import com.projects.snake.model.Design;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -16,7 +15,7 @@ public class LoginResponseMaker {
 	@Autowired
 	private NullUtil nullUtil;
 
-	public LoginResponse make(Integer id, String nickname, int coins, Design design) {
+	public LoginResponse make(Integer id, String nickname, int coins) {
 		nullUtil.check(id, "id");
 		if (nickname == null) {
 			nickname = "";
@@ -28,6 +27,6 @@ public class LoginResponseMaker {
 						"sopegksldkjtdofjyslkethjdrihkgsrtgjnhsoerkyudrhklgsktsjgdfkguwnbosertioseritwiorlachmanntheking"
 								.getBytes()))
 				.compact();
-		return new LoginResponse(id, nickname, jwts, expitarion, coins, design);
+		return new LoginResponse(id, nickname, jwts, expitarion, coins);
 	}
 }
