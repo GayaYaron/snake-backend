@@ -1,5 +1,6 @@
 package com.projects.snake.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +12,12 @@ import com.projects.snake.exception.NotEnoughCoinsException;
 import com.projects.snake.exception.NotFoundException;
 import com.projects.snake.exception.util.NullUtil;
 import com.projects.snake.model.ColorPack;
+import com.projects.snake.model.ColorType;
 import com.projects.snake.model.Design;
+import com.projects.snake.model.DesignBase;
 import com.projects.snake.model.User;
 import com.projects.snake.model.UserColor;
+import com.projects.snake.model.UserDesign;
 import com.projects.snake.repository.ColorPackRepo;
 import com.projects.snake.repository.DesignBaseRepo;
 import com.projects.snake.repository.DesignRepo;
@@ -96,13 +100,13 @@ public class UserService {
 	}
 
 	/**
-	 * buys the color pack
+	 * buys the colour pack
 	 * 
 	 * @param colorId
 	 * @throws AlreadyPurchasedException - if the user already has this color pack
-	 * @throws NotFoundException         - if such color pack was not found
+	 * @throws NotFoundException         - if such colour pack was not found
 	 * @throws NotEnoughCoinsException   - if the user does not have enough coins to
-	 *                                   buy the color pack
+	 *                                   buy the colour pack
 	 */
 	public void buyColorPack(Integer colorId) {
 		if (colorId != null) {
@@ -122,5 +126,44 @@ public class UserService {
 			user.setCoins(user.getCoins() - colorPack.getPrice());
 			userRepo.save(user);
 		}
+	}
+	
+	public void addDesign(Design design) {
+		if(design!=null) {
+			
+		}
+	}
+	
+	private void checkColorsInDesign(Design design) {
+		List<UserColor> userColors = userColorRepo.findByUserId(detail.getId());
+		boolean snake = false;
+		boolean border = false;
+		boolean food = false;
+		DesignBase base = design.getBase();
+		for(int i=0; i<userColors.size() && (!snake || !border || !food); i++) {
+			ColorPack colorPack = userColors.get(i).getColorPack();
+			ColorType type = colorPack.getType();
+			switch (type) {
+			case SNAKE:
+				snake = (snake || hasColor(snake, colorPack, base.getSnakeColor()));
+				break;
+			case BORDER:
+				border = (border || hasColor(border, colorPack, base.getBorderColor()));
+				break;
+
+			default:
+				food = (food || hasColor(food, colorPack, base.getFoodColor()));
+				break;
+			}
+		}
+		
+	}
+	
+	private boolean hasColor(boolean found, ColorPack colorPack, String searchColor) {
+		if(!found) {
+			List<String> colors = colorPack.getColors();
+			found = (found||colors.contains(searchColor));
+		}
+		return found;
 	}
 }
