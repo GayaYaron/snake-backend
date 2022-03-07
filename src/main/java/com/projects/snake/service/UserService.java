@@ -128,52 +128,70 @@ public class UserService {
 			userRepo.save(user);
 		}
 	}
-	
+
+	/**
+	 * saves the design base if no such base exists or fetches the existing base
+	 * saves the design saves the design in the user list sets the design to be the
+	 * user's chosen design
+	 * 
+	 * @param design
+	 * @throws NoColorException - if the user does not own one or more of the
+	 *                          colours for the design
+	 */
 	@Transactional(readOnly = false)
 	public void addDesign(Design design) {
-		if(design!=null) {
-			checkColorsInDesign(design);
-			userDesignRepo.save(new UserDesign(getUser().get(), design));
+		if (design != null) {
+			DesignBase base = design.getBase();
+			String snakeCol = base.getSnakeColor();
+			String borderCol = base.getBorderColor();
+			String foodCol = base.getFoodColor();
+			checkColorsInDesign(snakeCol, borderCol, foodCol);
+			Optional<DesignBase> optionalBase = designBaseRepo.findBySnakeColorAndBorderColorAndFoodColor(snakeCol,
+					borderCol, foodCol);
+			base = optionalBase.isEmpty() ? designBaseRepo.save(base) : optionalBase.get();
+			design.setBase(base);
+			Design savedDesign = designRepo.save(design);
+			userDesignRepo.save(new UserDesign(getUser().get(), savedDesign));
+			setChosenDesign(savedDesign.getId());
 		}
 	}
-	
-	private void checkColorsInDesign(Design design) {
+
+	private void checkColorsInDesign(String snakeCol, String borderCol, String foodCol) {
 		List<UserColor> userColors = userColorRepo.findByUserId(detail.getId());
 		boolean snake = false;
 		boolean border = false;
 		boolean food = false;
-		DesignBase base = design.getBase();
-		for(int i=0; i<userColors.size() && (!snake || !border || !food); i++) {
+		for (int i = 0; i < userColors.size() && (!snake || !border || !food); i++) {
 			ColorPack colorPack = userColors.get(i).getColorPack();
 			ColorType type = colorPack.getType();
 			switch (type) {
 			case SNAKE:
-				snake = (snake || hasColor(snake, colorPack, base.getSnakeColor()));
+				snake = (snake || hasColor(snake, colorPack, snakeCol));
 				break;
 			case BORDER:
-				border = (border || hasColor(border, colorPack, base.getBorderColor()));
+				border = (border || hasColor(border, colorPack, borderCol));
 				break;
 
 			default:
-				food = (food || hasColor(food, colorPack, base.getFoodColor()));
+				food = (food || hasColor(food, colorPack, foodCol));
 				break;
 			}
 		}
-		if(!snake) {
+		if (!snake) {
 			throw new NoColorException("snake");
 		}
-		if(!border) {
+		if (!border) {
 			throw new NoColorException("border");
 		}
-		if(!food) {
+		if (!food) {
 			throw new NoColorException("food");
 		}
 	}
-	
+
 	private boolean hasColor(boolean found, ColorPack colorPack, String searchColor) {
-		if(!found) {
+		if (!found) {
 			List<String> colors = colorPack.getColors();
-			found = (found||colors.contains(searchColor));
+			found = (found || colors.contains(searchColor));
 		}
 		return found;
 	}

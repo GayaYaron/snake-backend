@@ -18,5 +18,4 @@ public class Design {
 	private String name;
 	@ManyToOne
 	private DesignBase base;
-	
 }

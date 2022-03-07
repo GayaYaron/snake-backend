@@ -9,6 +9,6 @@ import com.projects.snake.model.DesignBase;
 
 @Repository
 public interface DesignBaseRepo extends JpaRepository<DesignBase, Integer> {
-	public Optional<DesignBase> existsByBorderColorAndSnakeColorAndFoodColor(String borderColor, String snakeColor,
+	public Optional<DesignBase> findBySnakeColorAndBorderColorAndFoodColor(String snakeColor, String borderColor,
 			String foodColor);
 }
