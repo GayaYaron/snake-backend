@@ -91,7 +91,7 @@ public class UserService {
 	}
 
 	/**
-	 * buys the colour pack
+	 * buys the colour pack (adds the purchase and reduces the user's coins)
 	 * 
 	 * @param colorId
 	 * @throws AlreadyPurchasedException - if the user already has this colour pack
@@ -99,6 +99,7 @@ public class UserService {
 	 * @throws NotEnoughCoinsException   - if the user does not have enough coins to
 	 *                                   buy the colour pack
 	 */
+	@Transactional(readOnly = false)
 	public void buyColorPack(Integer colorId) {
 		if (colorId != null) {
 			if (userColorRepo.existsByUserIdAndColorPackId(detail.getId(), colorId)) {
@@ -207,6 +208,7 @@ public class UserService {
 	 * @param designId
 	 * @throws NoDefaultDesignException - if it is the only default design the user has
 	 */
+	@Transactional(readOnly = false)
 	public void deleteDesign(Integer designId) {
 		if (designId != null) {
 			Optional<Design> optionalDesign = designRepo.findByIdAndUserId(designId, detail.getId());
@@ -219,5 +221,16 @@ public class UserService {
 				designRepo.delete(design);
 			}
 		}
+	}
+	
+	/**
+	 * adds the amount to the user's coins
+	 * @param amount
+	 */
+	@Transactional(readOnly = false)
+	public void addCoins(int amount) {
+		User user = getUser().get();
+		user.setCoins(user.getCoins()+amount);
+		userRepo.save(user);
 	}
 }
