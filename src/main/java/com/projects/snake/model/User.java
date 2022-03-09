@@ -10,9 +10,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sun.istack.NotNull;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Entity
 @Data
@@ -28,6 +31,9 @@ public class User {
 	private String password;
 	private int coins;
 	private Integer chosenDesign;
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
+	@JsonIgnore
 	@OneToMany(mappedBy = "user")
 	private List<Design> designs;
 	

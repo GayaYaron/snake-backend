@@ -14,4 +14,5 @@ public interface DesignRepo extends JpaRepository<Design, Integer>{
 	public Optional<Design> findByIdAndUserId(Integer id, Integer userId);
 	public Optional<Design> findFirstByNameAndUserId(String name, Integer userId);
 	public List<Design> findByNameAndUserId(String name, Integer userId);
+	public List<Design> findByUserId(Integer userId);
 }

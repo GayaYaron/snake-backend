@@ -82,15 +82,6 @@ public class UserService {
 	}
 
 	/**
-	 * 
-	 * @param designId
-	 * @return an optional of the design if such exists
-	 */
-	public Optional<Design> getDesign(Integer designId) {
-		return (designId != null) ? designRepo.findById(designId) : Optional.empty();
-	}
-
-	/**
 	 * buys the colour pack (adds the purchase and reduces the user's coins)
 	 * 
 	 * @param colorId
@@ -221,6 +212,14 @@ public class UserService {
 				designRepo.delete(design);
 			}
 		}
+	}
+	
+	/**
+	 * 
+	 * @return a list of all the user's designs
+	 */
+	public List<Design> getUserDesigns() {
+		return designRepo.findByUserId(detail.getId());
 	}
 	
 	/**
