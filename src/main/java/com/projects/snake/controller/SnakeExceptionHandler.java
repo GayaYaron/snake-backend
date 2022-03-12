@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.projects.snake.controller.model.ErrorDetail;
 import com.projects.snake.exception.AlreadyPurchasedException;
+import com.projects.snake.exception.LoginFailedException;
+import com.projects.snake.exception.NoColorException;
+import com.projects.snake.exception.NoDefaultDesignException;
 import com.projects.snake.exception.util.ErrorCode;
 
 @ControllerAdvice
@@ -19,4 +22,23 @@ public class SnakeExceptionHandler {
 	public ErrorDetail alreadyPurchased(AlreadyPurchasedException e) {
 		return new ErrorDetail(HttpStatus.CONFLICT.value(), ErrorCode.ALREADY_PURCHASED.getCode(), e.getMessage());
 	}
+	
+	@ExceptionHandler(LoginFailedException.class)
+	@ResponseStatus(HttpStatus.UNAUTHORIZED)
+	public ErrorDetail loginFailed(LoginFailedException e) {
+		return new ErrorDetail(HttpStatus.UNAUTHORIZED.value(), ErrorCode.LOGIN_FAILED.getCode(), e.getMessage());
+	}
+	
+	@ExceptionHandler(NoColorException.class)
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	public ErrorDetail noColor(NoColorException e) {
+		return new ErrorDetail(HttpStatus.NOT_FOUND.value(), ErrorCode.NO_COLOR.getCode(), e.getMessage());
+	}
+	
+	@ExceptionHandler(NoDefaultDesignException.class)
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	public ErrorDetail noDefaultDesign(NoDefaultDesignException e) {
+		return new ErrorDetail(HttpStatus.NOT_FOUND.value(), ErrorCode.NO_DEFAULT.getCode(), e.getMessage());
+	}
+	
 }
