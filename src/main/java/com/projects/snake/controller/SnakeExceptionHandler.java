@@ -12,6 +12,7 @@ import com.projects.snake.exception.LoginFailedException;
 import com.projects.snake.exception.NoColorException;
 import com.projects.snake.exception.NoDefaultDesignException;
 import com.projects.snake.exception.NotEnoughCoinsException;
+import com.projects.snake.exception.NotFoundException;
 import com.projects.snake.exception.util.ErrorCode;
 
 @ControllerAdvice
@@ -46,5 +47,11 @@ public class SnakeExceptionHandler {
 	@ResponseStatus(HttpStatus.CONFLICT)
 	public ErrorDetail notEnoughCoins(NotEnoughCoinsException e) {
 		return new ErrorDetail(HttpStatus.CONFLICT.value(), ErrorCode.NOT_ENOUGH_COINS.getCode(), e.getMessage());
+	}
+
+	@ExceptionHandler(NotFoundException.class)
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	public ErrorDetail notFound(NotFoundException e) {
+		return new ErrorDetail(HttpStatus.NOT_FOUND.value(), ErrorCode.NOT_FOUND.getCode(), e.getMessage());
 	}
 }
