@@ -13,6 +13,7 @@ import com.projects.snake.exception.NoColorException;
 import com.projects.snake.exception.NoDefaultDesignException;
 import com.projects.snake.exception.NotEnoughCoinsException;
 import com.projects.snake.exception.NotFoundException;
+import com.projects.snake.exception.NullVariableException;
 import com.projects.snake.exception.util.ErrorCode;
 
 @ControllerAdvice
@@ -53,5 +54,12 @@ public class SnakeExceptionHandler {
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	public ErrorDetail notFound(NotFoundException e) {
 		return new ErrorDetail(HttpStatus.NOT_FOUND.value(), ErrorCode.NOT_FOUND.getCode(), e.getMessage());
+	}
+
+	@ExceptionHandler(NullVariableException.class)
+	@ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+	public ErrorDetail nullVariable(NullVariableException e) {
+		return new ErrorDetail(HttpStatus.UNPROCESSABLE_ENTITY.value(), ErrorCode.NULL_VARIABLE.getCode(),
+				e.getMessage());
 	}
 }
