@@ -15,26 +15,27 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.projects.snake.controller.model.LoginBody;
-import com.projects.snake.exception.LoginFailedException;
 import com.projects.snake.exception.NotFoundException;
 import com.projects.snake.model.Design;
 import com.projects.snake.model.User;
 import com.projects.snake.service.UserService;
 import com.projects.snake.service.response.LoginResponse;
 
+
 @Controller
-@RequestMapping(value = "/user")
+@RequestMapping(value = "user")
 public class UserController {
 	@Autowired
 	private UserService service;
 	
+	@PostMapping(value = "/register")
+	public ResponseEntity<LoginResponse> Register(@RequestBody LoginBody loginBody) {
+		return ResponseEntity.ok(service.register(loginBody.getNickname(), loginBody.getPassword()));
+	}
+	
 	@PostMapping(value = "/login")
 	public ResponseEntity<LoginResponse> login(@RequestBody LoginBody loginBody) {
-		Optional<LoginResponse> optionalLogin = service.login(loginBody.getNickname(), loginBody.getPassword());
-		if(optionalLogin.isEmpty()) {
-			throw new LoginFailedException();
-		}
-		return ResponseEntity.ok(optionalLogin.get());
+		return ResponseEntity.ok(service.login(loginBody.getNickname(), loginBody.getPassword()));
 	}
 	
 	@PutMapping(value = "/chosen_design")

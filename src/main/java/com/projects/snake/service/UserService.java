@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.projects.snake.exception.AlreadyPurchasedException;
+import com.projects.snake.exception.LoginFailedException;
 import com.projects.snake.exception.NoColorException;
 import com.projects.snake.exception.NoDefaultDesignException;
 import com.projects.snake.exception.NotEnoughCoinsException;
@@ -44,15 +45,37 @@ public class UserService {
 	@Autowired
 	private UserDetail detail;
 
-	public Optional<LoginResponse> login(String nickname, String password) {
+	/**
+	 * registers the new user with 50 coins and a default chosen design
+	 * @param nickname
+	 * @param password
+	 * @return login response of the new user
+	 */
+	public LoginResponse register(String nickname, String password) {
+		User user = userRepo.save(new User(nickname, password, 50));
+		Design design = designRepo.save(new Design("default", "grey", "black", "red", user));
+		user.setChosenDesign(design.getId());
+		userRepo.save(user);
+		return login(nickname, password);
+	}
+
+	/**
+	 * 
+	 * @param nickname
+	 * @param password
+	 * @return login response
+	 * @throws LoginFailedException - if no such user was found
+	 * @throws NullException - if nickname and/or password is null
+	 */
+	public LoginResponse login(String nickname, String password) {
 		nullUtil.check(nickname, "nickname");
 		nullUtil.check(password, "password");
 		Optional<User> optionalUser = userRepo.findByNicknameAndPassword(nickname, password);
 		if (optionalUser.isEmpty()) {
-			return Optional.empty();
+			throw new LoginFailedException();
 		}
 		User user = optionalUser.get();
-		return Optional.of(responseMaker.make(user.getId(), user.getNickname(), user.getCoins()));
+		return responseMaker.make(user.getId(), user.getChosenDesign(), user.getNickname(), user.getCoins());
 	}
 
 	/**
@@ -182,10 +205,12 @@ public class UserService {
 	 *                                  found
 	 */
 	public Design getChosenDesign() {
-		 Integer chosenDesign = getUser().get().getChosenDesign();
-		 Optional<Design> optionalChosen = designRepo.findById(chosenDesign);
-		 if(optionalChosen.isPresent()) {
-			 return optionalChosen.get();
+		 Integer chosenDesign = detail.getChosenDesignId();
+		 if(chosenDesign != null) {
+			 Optional<Design> optionalChosen = designRepo.findById(chosenDesign);
+			 if(optionalChosen.isPresent()) {
+				 return optionalChosen.get();
+			 }
 		 }
 		 Optional<Design> optionalDefault = designRepo.findFirstByNameAndUserId("default", detail.getId());
 		 if(optionalDefault.isEmpty()) {

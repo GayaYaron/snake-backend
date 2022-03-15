@@ -13,4 +13,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserDetail {
 	private Integer id;
+	private Integer chosenDesignId;
 }

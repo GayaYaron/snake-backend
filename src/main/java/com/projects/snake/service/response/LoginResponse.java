@@ -9,6 +9,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class LoginResponse {
 	private Integer id;
+	private Integer chosenDesign;
 	private String nickname;
 	private String jwtToken;
 	private Date expiration;

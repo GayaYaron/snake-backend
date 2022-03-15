@@ -15,10 +15,12 @@ import com.sun.istack.NotNull;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Entity
 @Data
+@NoArgsConstructor
 public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -37,4 +39,10 @@ public class User {
 	@OneToMany(mappedBy = "user")
 	private List<Design> designs;
 	
+	public User(String nickname, String password, int coins) {
+		super();
+		this.nickname = nickname;
+		this.password = password;
+		this.coins = coins;
+	}
 }

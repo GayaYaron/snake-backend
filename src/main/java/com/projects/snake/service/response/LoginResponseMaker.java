@@ -15,18 +15,22 @@ public class LoginResponseMaker {
 	@Autowired
 	private NullUtil nullUtil;
 
-	public LoginResponse make(Integer id, String nickname, int coins) {
+	public LoginResponse make(Integer id, Integer chosenDesign ,String nickname, int coins) {
 		nullUtil.check(id, "id");
 		if (nickname == null) {
 			nickname = "";
 		}
 		Date expitarion = new Date(System.currentTimeMillis() + 5400000);
-		String jwts = Jwts.builder().setIssuer("CouponsWebsite").setSubject("" + id).claim("clientName", nickname)
-				.setIssuedAt(new Date()).setExpiration(expitarion)
+		String jwts = Jwts.builder()
+				.setIssuer("SnakeWebsite")
+				.setSubject("" + id)
+				.setIssuedAt(new Date())
+				.setExpiration(expitarion)
 				.signWith(Keys.hmacShaKeyFor(
-						"sopegksldkjtdofjyslkethjdrihkgsrtgjnhsoerkyudrhklgsktsjgdfkguwnbosertioseritwiorlachmanntheking"
+						"sopegksldkjtdofjyslkethjdrihkgsrtgjnhsoerkyudrhklgsktsjgdfkguwnbosertlachmanntheking"
 								.getBytes()))
+				.claim("chosenDesign", chosenDesign)
 				.compact();
-		return new LoginResponse(id, nickname, jwts, expitarion, coins);
+		return new LoginResponse(id, chosenDesign, nickname, jwts, expitarion, coins);
 	}
 }
