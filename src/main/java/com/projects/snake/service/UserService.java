@@ -53,7 +53,7 @@ public class UserService {
 	 */
 	public LoginResponse register(String nickname, String password) {
 		User user = userRepo.save(new User(nickname, password, 50));
-		Design design = designRepo.save(new Design("default", "grey", "black", "red", user));
+		Design design = designRepo.save(new Design("default", "backGrey", "baclBlack", "backRed", user));
 		user.setChosenDesign(design.getId());
 		userRepo.save(user);
 		return login(nickname, password);
