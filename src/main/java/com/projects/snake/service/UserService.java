@@ -252,9 +252,10 @@ public class UserService {
 	 * @param amount
 	 */
 	@Transactional(readOnly = false)
-	public void addCoins(int amount) {
+	public int addCoins(int amount) {
 		User user = getUser().get();
 		user.setCoins(user.getCoins()+amount);
-		userRepo.save(user);
+		User savedUser = userRepo.save(user);
+		return savedUser.getCoins();
 	}
 }

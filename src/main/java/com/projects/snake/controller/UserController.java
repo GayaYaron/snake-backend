@@ -82,8 +82,7 @@ public class UserController {
 	}
 	
 	@PutMapping(value = "/coins")
-	public ResponseEntity<Void> addCoins(@RequestParam int amount) {
-		service.addCoins(amount);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<Integer> addCoins(@RequestParam int amount) {
+		return ResponseEntity.ok(service.addCoins(amount));
 	}
 }
