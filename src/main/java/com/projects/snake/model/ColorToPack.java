@@ -21,9 +21,9 @@ public class ColorToPack {
 	@ManyToOne
 	private StringEnt color;
 	
-	public ColorToPack(ColorPack pack, StringEnt color) {
+	public ColorToPack(StringEnt color, ColorPack pack) {
 		super();
-		this.pack = pack;
 		this.color = color;
+		this.pack = pack;
 	}
 }

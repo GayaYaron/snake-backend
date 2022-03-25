@@ -1,6 +1,5 @@
 package com.projects.snake.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,12 +15,14 @@ import com.projects.snake.exception.NotEnoughCoinsException;
 import com.projects.snake.exception.NotFoundException;
 import com.projects.snake.exception.util.NullUtil;
 import com.projects.snake.model.ColorPack;
+import com.projects.snake.model.ColorToPack;
 import com.projects.snake.model.ColorType;
 import com.projects.snake.model.Design;
 import com.projects.snake.model.StringEnt;
 import com.projects.snake.model.User;
 import com.projects.snake.model.UserColor;
 import com.projects.snake.repository.ColorPackRepo;
+import com.projects.snake.repository.ColorToPackRepo;
 import com.projects.snake.repository.DesignRepo;
 import com.projects.snake.repository.StringEntRepo;
 import com.projects.snake.repository.UserColorRepo;
@@ -38,11 +39,13 @@ public class UserService {
 	@Autowired
 	private UserRepo userRepo;
 	@Autowired
-	private ColorPackRepo colorRepo;
+	private ColorPackRepo colorPackRepo;
 	@Autowired
 	private UserColorRepo userColorRepo;
 	@Autowired
 	private StringEntRepo stringEntRepo;
+	@Autowired
+	private ColorToPackRepo colorToPackRepo;
 	@Autowired
 	private LoginResponseMaker responseMaker;
 	@Autowired
@@ -124,7 +127,7 @@ public class UserService {
 			if (userColorRepo.existsByUserIdAndColorPackId(detail.getId(), colorId)) {
 				throw new AlreadyPurchasedException("color pack");
 			}
-			Optional<ColorPack> optional = colorRepo.findById(colorId);
+			Optional<ColorPack> optional = colorPackRepo.findById(colorId);
 			if (optional.isEmpty()) {
 				throw new NotFoundException("color pack");
 			}
@@ -197,8 +200,10 @@ public class UserService {
 
 	private boolean hasColor(boolean found, ColorPack colorPack, String searchColor) {
 		if (!found) {
-			List<String> colors = colorPack.getColors();
-			found = (found || colors.contains(searchColor));
+			List<ColorToPack> colors = colorPack.getColors();
+			for(int i=0; i<colors.size() && !found; i++) {
+				found = colors.get(i).getColor().getValue() == searchColor;
+			}
 		}
 		return found;
 	}
@@ -264,15 +269,21 @@ public class UserService {
 		return savedUser.getCoins();
 	}
 	
-	private ColorPack saveColorPack(ColorPack pack, List<String> colors) {
+	/**
+	 * saves the colour pack and saves all the colours and their relation to the pack 
+	 * @param pack
+	 * @param colors
+	 * @return the saved colour pack with id (without colours)
+	 */
+	public ColorPack addColorPack(ColorPack pack, List<String> colors) {
+		ColorPack colorPack = colorPackRepo.save(pack);
 		if(colors != null) {
-			List<StringEnt> colorEnts = new ArrayList<StringEnt>(colors.size());
 			for (String color : colors) {
 				Optional<StringEnt> optionalColor = stringEntRepo.findById(color);
 				StringEnt colorEnt = (optionalColor.isPresent()) ? optionalColor.get() : stringEntRepo.save(new StringEnt(color));
-				colorEnts.add(colorEnt);
+				colorToPackRepo.save(new ColorToPack(colorEnt, colorPack));
 			}
-			
 		}
+		return colorPack;
 	}
 }
