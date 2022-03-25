@@ -1,5 +1,6 @@
 package com.projects.snake.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,10 +18,12 @@ import com.projects.snake.exception.util.NullUtil;
 import com.projects.snake.model.ColorPack;
 import com.projects.snake.model.ColorType;
 import com.projects.snake.model.Design;
+import com.projects.snake.model.StringEnt;
 import com.projects.snake.model.User;
 import com.projects.snake.model.UserColor;
 import com.projects.snake.repository.ColorPackRepo;
 import com.projects.snake.repository.DesignRepo;
+import com.projects.snake.repository.StringEntRepo;
 import com.projects.snake.repository.UserColorRepo;
 import com.projects.snake.repository.UserRepo;
 import com.projects.snake.service.detail.UserDetail;
@@ -38,6 +41,8 @@ public class UserService {
 	private ColorPackRepo colorRepo;
 	@Autowired
 	private UserColorRepo userColorRepo;
+	@Autowired
+	private StringEntRepo stringEntRepo;
 	@Autowired
 	private LoginResponseMaker responseMaker;
 	@Autowired
@@ -257,5 +262,17 @@ public class UserService {
 		user.setCoins(user.getCoins()+amount);
 		User savedUser = userRepo.save(user);
 		return savedUser.getCoins();
+	}
+	
+	private ColorPack saveColorPack(ColorPack pack, List<String> colors) {
+		if(colors != null) {
+			List<StringEnt> colorEnts = new ArrayList<StringEnt>(colors.size());
+			for (String color : colors) {
+				Optional<StringEnt> optionalColor = stringEntRepo.findById(color);
+				StringEnt colorEnt = (optionalColor.isPresent()) ? optionalColor.get() : stringEntRepo.save(new StringEnt(color));
+				colorEnts.add(colorEnt);
+			}
+			
+		}
 	}
 }
