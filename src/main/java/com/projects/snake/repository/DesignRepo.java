@@ -10,7 +10,7 @@ import com.projects.snake.model.Design;
 
 @Repository
 public interface DesignRepo extends JpaRepository<Design, Integer>{
-	public boolean existsByIdUserId(Integer id, Integer userId);
+	public boolean existsByIdAndUserId(Integer id, Integer userId);
 	public Optional<Design> findByIdAndUserId(Integer id, Integer userId);
 	public Optional<Design> findFirstByNameAndUserId(String name, Integer userId);
 	public List<Design> findByNameAndUserId(String name, Integer userId);

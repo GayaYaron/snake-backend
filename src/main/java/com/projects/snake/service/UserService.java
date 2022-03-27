@@ -95,7 +95,7 @@ public class UserService {
 	@Transactional(readOnly = false)
 	public void setChosenDesign(Integer designId) {
 		if (!(designId == null)) {
-			if (!(designRepo.existsByIdUserId(designId, detail.getId()))) {
+			if (!(designRepo.existsByIdAndUserId(designId, detail.getId()))) {
 				throw new NotFoundException("design");
 			}
 			User user = getUser().get();
