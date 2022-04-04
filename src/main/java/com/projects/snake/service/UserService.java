@@ -2,6 +2,7 @@ package com.projects.snake.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,6 +56,7 @@ public class UserService {
 
 	/**
 	 * registers the new user with 50 coins and a default chosen design
+	 * 
 	 * @param nickname
 	 * @param password
 	 * @return login response of the new user
@@ -73,7 +75,7 @@ public class UserService {
 	 * @param password
 	 * @return login response
 	 * @throws LoginFailedException - if no such user was found
-	 * @throws NullException - if nickname and/or password is null
+	 * @throws NullException        - if nickname and/or password is null
 	 */
 	public LoginResponse login(String nickname, String password) {
 		nullUtil.check(nickname, "nickname");
@@ -201,7 +203,7 @@ public class UserService {
 	private boolean hasColor(boolean found, ColorPack colorPack, String searchColor) {
 		if (!found) {
 			List<ColorToPack> colors = colorPack.getColors();
-			for(int i=0; i<colors.size() && !found; i++) {
+			for (int i = 0; i < colors.size() && !found; i++) {
 				found = colors.get(i).getColor().getValue() == searchColor;
 			}
 		}
@@ -215,24 +217,27 @@ public class UserService {
 	 *                                  found
 	 */
 	public Design getChosenDesign() {
-		 Integer chosenDesign = detail.getChosenDesignId();
-		 if(chosenDesign != null) {
-			 Optional<Design> optionalChosen = designRepo.findById(chosenDesign);
-			 if(optionalChosen.isPresent()) {
-				 return optionalChosen.get();
-			 }
-		 }
-		 Optional<Design> optionalDefault = designRepo.findFirstByNameAndUserId("default", detail.getId());
-		 if(optionalDefault.isEmpty()) {
-			 throw new NoDefaultDesignException();
-		 }
-		 return optionalDefault.get();
+		Integer chosenDesign = detail.getChosenDesignId();
+		if (chosenDesign != null) {
+			Optional<Design> optionalChosen = designRepo.findById(chosenDesign);
+			if (optionalChosen.isPresent()) {
+				return optionalChosen.get();
+			}
+		}
+		Optional<Design> optionalDefault = designRepo.findFirstByNameAndUserId("default", detail.getId());
+		if (optionalDefault.isEmpty()) {
+			throw new NoDefaultDesignException();
+		}
+		return optionalDefault.get();
 	}
 
 	/**
-	 * deletes the design as long as it is not called default or that the user has another default design
+	 * deletes the design as long as it is not called default or that the user has
+	 * another default design
+	 * 
 	 * @param designId
-	 * @throws NoDefaultDesignException - if it is the only default design the user has
+	 * @throws NoDefaultDesignException - if it is the only default design the user
+	 *                                  has
 	 */
 	@Transactional(readOnly = false)
 	public void deleteDesign(Integer designId) {
@@ -248,7 +253,7 @@ public class UserService {
 			}
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @return a list of all the user's designs
@@ -256,34 +261,47 @@ public class UserService {
 	public List<Design> getUserDesigns() {
 		return designRepo.findByUserId(detail.getId());
 	}
-	
+
 	/**
 	 * adds the amount to the user's coins
+	 * 
 	 * @param amount
 	 */
 	@Transactional(readOnly = false)
 	public int addCoins(int amount) {
 		User user = getUser().get();
-		user.setCoins(user.getCoins()+amount);
+		user.setCoins(user.getCoins() + amount);
 		User savedUser = userRepo.save(user);
 		return savedUser.getCoins();
 	}
-	
+
 	/**
-	 * saves the colour pack and saves all the colours and their relation to the pack 
+	 * saves the colour pack and saves all the colours and their relation to the
+	 * pack
+	 * 
 	 * @param pack
 	 * @param colors
 	 * @return the saved colour pack with id (without colours)
 	 */
 	public ColorPack addColorPack(ColorPack pack, List<String> colors) {
 		ColorPack colorPack = colorPackRepo.save(pack);
-		if(colors != null) {
+		if (colors != null) {
 			for (String color : colors) {
 				Optional<StringEnt> optionalColor = stringEntRepo.findById(color);
-				StringEnt colorEnt = (optionalColor.isPresent()) ? optionalColor.get() : stringEntRepo.save(new StringEnt(color));
+				StringEnt colorEnt = (optionalColor.isPresent()) ? optionalColor.get()
+						: stringEntRepo.save(new StringEnt(color));
 				colorToPackRepo.save(new ColorToPack(colorEnt, colorPack));
 			}
 		}
 		return colorPack;
+	}
+
+	/**
+	 * 
+	 * @return a list of all the user's colour packs
+	 */
+	public List<ColorPack> getUserColorPacks() {
+		return userColorRepo.findByUserId(detail.getId()).stream().map(userColor -> userColor.getColorPack())
+				.collect(Collectors.toList());
 	}
 }

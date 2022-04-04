@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.projects.snake.controller.model.LoginBody;
 import com.projects.snake.exception.NotFoundException;
+import com.projects.snake.model.ColorPack;
 import com.projects.snake.model.Design;
 import com.projects.snake.model.User;
 import com.projects.snake.service.UserService;
@@ -84,5 +85,10 @@ public class UserController {
 	@PutMapping(value = "/coins")
 	public ResponseEntity<Integer> addCoins(@RequestParam int amount) {
 		return ResponseEntity.ok(service.addCoins(amount));
+	}
+	
+	@GetMapping(value = "/colors")
+	public ResponseEntity<List<ColorPack>> getUserColors() {
+		return ResponseEntity.ok(service.getUserColorPacks());
 	}
 }
