@@ -91,4 +91,9 @@ public class UserController {
 	public ResponseEntity<List<ColorPack>> getUserColors() {
 		return ResponseEntity.ok(service.getUserColorPacks());
 	}
-}
+	
+	@GetMapping(value = "/colors/all")
+	public ResponseEntity<List<ColorPack>> getAllColors() {
+		return ResponseEntity.ok(service.getColorPacks());
+	}
+	}

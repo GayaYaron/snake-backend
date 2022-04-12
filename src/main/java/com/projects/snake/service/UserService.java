@@ -304,4 +304,12 @@ public class UserService {
 		return userColorRepo.findByUserId(detail.getId()).stream().map(userColor -> userColor.getColorPack())
 				.collect(Collectors.toList());
 	}
+	
+	/**
+	 * 
+	 * @return a list of all the colour packs
+	 */
+	public List<ColorPack> getColorPacks() {
+		return colorPackRepo.findAll();
+	}
 }
